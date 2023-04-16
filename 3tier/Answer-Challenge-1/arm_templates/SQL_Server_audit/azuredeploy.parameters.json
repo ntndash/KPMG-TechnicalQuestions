@@ -1,0 +1,62 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "sqlservername": {
+            "value": "cocacola-sqlserver"
+        },
+        "sqlserveradminlogin": {
+            "value": "safetyscannercc-db-user"
+        },
+        "sqlserveradminloginpassword": {
+            "reference": {
+                "keyVault": {
+                    "id": "/subscriptions/73a85de0-d4d7-4893-8a7b-f98a32bf2da9/resourceGroups/cocacola-prod-rg/providers/Microsoft.KeyVault/vaults/scannercckvprd"
+                },
+                "secretName": "db-produser"
+            }
+        },
+        "sqldatabasename": {
+            "value": "cocacola-sqldb"
+        },
+        "db_instances" : {
+            "value": [ "cocacola-sqldb-prod",
+                "cocacola-sqldb-staging"
+            ]
+        },
+        "environment" : {
+            "value": "prod"
+        },
+        "owner" : {
+            "value": "DASH"
+         },
+        "costcenter": {
+            "value": "cocacola"
+        },
+        "maxsizeinbytes": {
+            "value": "536870912000"
+        },
+        "sqldatabaseedition": {
+            "value": "Standard"
+        },
+        "capacity":{
+            "value": 200
+        },
+        "sqldatabaserequestedserviceobjectiveName": {
+            "value": "S2"
+        },
+        "storageAccountName": {
+            "value": "storecoke001"
+        },
+        "storageAccountResourceGroupName": {
+            "value": "cocacola-prod-rg"
+        },
+        "accesskey": {
+            "value": "9/lTtOJIaucD3xXL23ebZiPxiEnelDO/lxT65U386v4X9PPN2V3PzyE9DV7s9LsAzYs4w+cz+Ef5+ASt6Uo9Uw=="
+
+        }
+
+
+
+    }
+}

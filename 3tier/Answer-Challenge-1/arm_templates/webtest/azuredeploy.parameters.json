@@ -1,0 +1,30 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "webtestname": {
+            "value": "lr-LRTestWebApplication-webtest"
+        },
+        "webappnames": {
+            "value": "lrsb-example-webapp-prod"
+        },
+        "appinsightname": {
+            "value": "lrsb-example-serviceplan-prod-appinsight"
+        },
+        "customEmailAddresses": {
+            "value": "DigiPlatform.PlatformSupport@lr.org"
+        },
+        "actionGroupId": {
+            "value": "lrsb-example-serviceplan-actiongroup"
+        },
+        "environment": {
+            "value": "nonprod"
+        },
+        "costcenter": {
+            "value": "digitalplatform"
+        },
+        "owner": {
+            "value": "LRSB"
+        }
+    }
+}

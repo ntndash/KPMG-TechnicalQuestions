@@ -1,0 +1,50 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "failovergrpname": {
+            "value": "cocacola-sqlserver-failovergroup"
+        },
+        "failoversqlservername": {
+            "value": "cocacola-sqlserver-failover"
+        },
+        "failoverlocation": {
+            "value": "westeurope"
+        },
+        "failoverPolicy": {
+            "value": "Automatic"
+        },
+        "failoverWithDataLossGracePeriodMinutes": {
+            "value": "60"
+        },
+        "sqlservername": {
+            "value": "cocacola-sqlserver-prod"
+        },
+        "sqlserveradminlogin": {
+            "value": "safetyscannercc-db-user"
+        },
+        "sqlserveradminloginpassword": {
+            "reference": {
+                "keyVault": {
+                    "id": "/subscriptions/73a85de0-d4d7-4893-8a7b-f98a32bf2da9/resourceGroups/cocacola-prod-rg/providers/Microsoft.KeyVault/vaults/scannercckvprd"
+                },
+                "secretName": "db-produser"
+            }
+        },
+        "db_instances": {
+            "value": [
+                     "/subscriptions/73a85de0-d4d7-4893-8a7b-f98a32bf2da9/resourceGroups/cocacola-prod-rg/providers/Microsoft.Sql/servers/cocacola-sqlserver-prod/databases/cocacola-sqldb-prod",
+                     "/subscriptions/73a85de0-d4d7-4893-8a7b-f98a32bf2da9/resourceGroups/cocacola-prod-rg/providers/Microsoft.Sql/servers/cocacola-sqlserver-prod/databases/cocacola-sqldb-staging"
+            ]
+        },
+        "environment": {
+            "value": "prod"
+        },
+        "costcenter": {
+            "value": "cocacola"
+        },
+        "owner": {
+            "value": "Dash"
+        }
+    }
+}

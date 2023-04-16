@@ -1,0 +1,34 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "appservicename": {
+            "value": "lr-digitalplatform-serviceplan"
+        },
+        "webappnames": {
+            "value": ["lr-digitalplatform-apiapp", "lr-digitalplatform-webapp"]
+        },
+        "environment": {
+            "value": "nonprod"
+        },
+        "location": {
+            "value": "westeurope"
+        },
+        "costcenter": {
+            "value": "digitalplatform"
+        },
+        "owner": {
+            "value": "LRSB"
+        },
+        "appinsight": {
+            "value": "no"
+        },
+        "workersize": {
+            "value": "0"
+        },
+        "webappsku": {
+            "value": "Standard"
+
+        }
+    }
+}

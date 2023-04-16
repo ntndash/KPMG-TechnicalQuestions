@@ -1,0 +1,24 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "uniqueDnsName": {
+            "value": "cocacola-web-tm"
+        },
+        "uniqueDnsNamesForWebApp": {
+            "value": [
+                "cocacola-webapp-prod",
+                "webapp-prod-secondary"
+            ]
+        },
+        "relevantRGs": {
+            "value": [
+                "cocacola-prod-rg",
+                "cocacola-prod-rg"
+            ]
+        },
+        "subscriptions": {
+            "value": "73a85de0-d4d7-4893-8a7b-f98a32bf2da9"
+        }
+    }
+}

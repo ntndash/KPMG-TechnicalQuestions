@@ -1,0 +1,164 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "appservicename": {
+      "type": "string",
+      "minLength": 1
+    },
+    "costcenter": {
+      "type": "string",
+      "minLength": 1,
+      "metadata": {
+        "description": "The app costcenter name."
+      }
+    },
+    "environment": {
+      "type": "string",
+      "minLength": 1,
+      "metadata": {
+        "description": "The SQL server Environment."
+      }
+    },
+    "owner": {
+      "type": "string",
+      "minLength": 1,
+      "metadata": {
+        "description": "The application Owner."
+      }
+    },
+    "webappnames_slots": {
+      "type": "array",
+      "metadata": {
+        "description": "Array with the names for the environment webapp slots"
+      }
+    },
+    "webappnames": {
+      "type": "array",
+      "metadata": {
+        "description": "The names of the Web Apps"
+      }
+    },
+    "siteproperties": {
+      "type": "object",
+      "metadata": {
+        "description": "The name of the Web/API Apps properties for Web/API Apps"
+      }
+    },
+    "webapplicationsettings": {
+      "type": "object",
+      "metadata": {
+        "description": "The name of the Web/API Apps web application settings for Web/API Apps"
+      }
+    }
+  },
+  "resources": [
+    {
+      "apiVersion": "2015-08-01",
+      "name": "[concat(parameters('webappnames')[copyIndex()],'/','web')]",
+      "tags": {
+        "displayName": "[concat(parameters('webappnames')[copyIndex()],'/','web')]",
+        "environment": "[parameters('environment')]",
+        "costcenter": "[parameters('costcenter')]",
+        "owner": "[parameters('owner')]",
+        "Service": "Digital Platform"
+      },
+      "type": "Microsoft.Web/sites/config",
+      "properties": "[parameters('siteproperties')]",
+      "copy": {
+        "name": "web",
+        "count": "[length(parameters('webappnames'))]"
+      }
+    },
+    {
+      "apiVersion": "2015-08-01",
+      "type": "Microsoft.Web/sites/config",
+      "tags": {
+        "displayName": "[concat(parameters('webappnames')[copyIndex()],'/','appsettings')]",
+        "environment": "[parameters('environment')]",
+        "costcenter": "[parameters('costcenter')]",
+        "owner": "[parameters('owner')]",
+        "Service": "Digital Platform"
+      },
+      "name": "[concat(parameters('webappnames')[copyIndex()],'/','appsettings')]",
+      "location": "[resourceGroup().location]",
+      "properties": "[parameters('webapplicationsettings').prod.appSettings]",
+      "copy": {
+        "name": "appsettings",
+        "count": "[length(parameters('webappnames'))]"
+      }
+    },
+    {
+      "apiVersion": "2014-11-01",
+      "type": "Microsoft.Web/sites/config",
+      "tags": {
+        "displayName": "[concat(parameters('webappnames')[copyIndex()],'/','connectionstrings')]",
+        "environment": "[parameters('environment')]",
+        "costcenter": "[parameters('costcenter')]",
+        "owner": "[parameters('owner')]",
+        "Service": "Digital Platform"
+      },
+      "name": "[concat(parameters('webappnames')[copyIndex()],'/','connectionstrings')]",
+      "location": "[resourceGroup().location]",
+      "properties":   "[parameters('webapplicationsettings').prod.connectionStrings]",
+      "copy": {
+        "name": "connectionstrings",
+        "count": "[length(parameters('webappnames'))]"
+      }
+    },
+      {
+        "apiVersion": "2014-11-01",
+        "type": "Microsoft.Web/sites/slots/config",
+        "tags": {
+          "displayName": "[concat(first(split(parameters('webappnames_slots')[copyIndex()],'*')), '/', last(split(parameters('webappnames_slots')[copyIndex()],'*')),'/','connectionstrings')]",
+          "environment": "[parameters('environment')]",
+          "costcenter": "[parameters('costcenter')]",
+          "owner": "[parameters('owner')]",
+          "Service": "Digital Platform"
+        },
+        "name": "[concat(first(split(parameters('webappnames_slots')[copyIndex()],'*')), '/', last(split(parameters('webappnames_slots')[copyIndex()],'*')),'/','connectionstrings')]",
+        "location": "[resourceGroup().location]",
+        "properties": "[parameters('webapplicationsettings')[last(split(parameters('webappnames_slots')[copyIndex()],'*'))].connectionStrings]",
+        "copy": {
+          "name": "webPortalSlot_connectionstrings",
+          "count": "[length(parameters('webappnames_slots'))]"
+        }
+      },
+       {
+        "apiVersion": "2014-11-01",
+        "type": "Microsoft.Web/sites/slots/config",
+        "tags": {
+          "displayName": "[concat(first(split(parameters('webappnames_slots')[copyIndex()],'*')), '/', last(split(parameters('webappnames_slots')[copyIndex()],'*')),'/','appsettings')]",
+          "environment": "[parameters('environment')]",
+          "costcenter": "[parameters('costcenter')]",
+          "owner": "[parameters('owner')]",
+          "Service": "Digital Platform"
+        },
+        "name": "[concat(first(split(parameters('webappnames_slots')[copyIndex()],'*')), '/', last(split(parameters('webappnames_slots')[copyIndex()],'*')),'/','appsettings')]",
+        "location": "[resourceGroup().location]",
+        "properties": "[parameters('webapplicationsettings')[last(split(parameters('webappnames_slots')[copyIndex()],'*'))].appSettings]",
+        "copy": {
+          "name": "webPortalSlot_appsettings",
+          "count": "[length(parameters('webappnames_slots'))]"
+        }
+      },
+      {
+        "apiVersion": "2014-11-01",
+        "type": "Microsoft.Web/sites/slots/config",
+        "tags": {
+          "displayName": "[concat(first(split(parameters('webappnames_slots')[copyIndex()],'*')), '/', last(split(parameters('webappnames_slots')[copyIndex()],'*')),'/','web')]",
+          "environment": "[parameters('environment')]",
+          "costcenter": "[parameters('costcenter')]",
+          "owner": "[parameters('owner')]",
+          "Service": "Digital Platform"
+        },
+        "name": "[concat(first(split(parameters('webappnames_slots')[copyIndex()],'*')), '/', last(split(parameters('webappnames_slots')[copyIndex()],'*')),'/','web')]",
+        "location": "[resourceGroup().location]",
+        "properties": "[parameters('siteproperties')]",
+        "copy": {
+          "name": "webPortalSlot_web",
+          "count": "[length(parameters('webappnames_slots'))]"
+        }
+      }
+  ]
+}

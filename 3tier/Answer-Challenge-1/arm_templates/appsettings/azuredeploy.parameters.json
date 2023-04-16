@@ -1,0 +1,139 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "appservicename": {
+            "value": "lr-digitalplatform-serviceplan"
+        },
+        "webappnames_slots": {
+            "value": [
+                "lr-digitalplatform-apiapp*dev",
+                "lr-digitalplatform-apiapp*qa",
+                "lr-digitalplatform-webapp*dev",
+                "lr-digitalplatform-webapp*qa"
+            ]
+        },
+        "webappnames": {
+            "value": [
+                "lr-digitalplatform-apiapp",
+                "lr-digitalplatform-webapp"
+            ]
+        },
+        "environment": {
+            "value": "nonprod"
+        },
+        "costcenter": {
+            "value": "digitalplatform"
+        },
+        "owner": {
+            "value": "digitalplatform"
+        },
+        "siteProperties": {
+            "value": {
+                "netFrameworkVersion": "v4.7",
+                "use32BitWorkerProcess": false,
+                "webSocketsEnabled": true,
+                "alwaysOn": true,
+                "requestTracingEnabled": true,
+                "httpLoggingEnabled": true,
+                "logsDirectorySizeLimit": 40,
+                "detailedErrorLoggingEnabled": true,
+                "remoteDebuggingEnabled": false,
+                "remoteDebuggingVersion": "VS2015",
+                "http20Enabled": false,
+                "minTlsVersion": "1.2",
+                "defaultDocuments": [
+                    "home.html"
+                ]
+            }
+        },
+        "webapplicationsettings": {
+            "value": {
+                "nonprod": {
+                    "connectionStrings": {
+                        "nonprod-con-c1": {
+                            "value": "connection_c1",
+                            "type": "SQLAzure"
+                        },
+                        "nonprod-con-c2": {
+                            "value": "connection_c2",
+                            "type": "SQLAzure"
+                        },
+                        "nonprod-con-c3": {
+                            "value": "connection_c3",
+                            "type": "SQLAzure"
+                        },
+                        "nonprod-con-c4": {
+                            "value": "connection_c4",
+                            "type": "SQLAzure"
+                        },
+                        "nonprod-con-c5": {
+                            "value": "connection_c5",
+                            "type": "SQLAzure"
+                        }
+                    },
+                    "appSettings": {
+                        "appsttings01": "appsttings01",
+                        "appsttings02": "appsttings02"
+                    }
+                },
+                "dev": {
+                    "connectionStrings": {
+                        "[cancat(parameter('environment'),'-con-c1')]": {
+                            "value": "connection_c1",
+                            "type": "SQLAzure"
+                        },
+                        "[cancat(parameter('environment'),'-con-c2')]": {
+                            "value": "connection_c2",
+                            "type": "SQLAzure"
+                        },
+                        "[cancat(parameter('environment'),'-con-c3')]": {
+                            "value": "connection_c3",
+                            "type": "SQLAzure"
+                        },
+                        "[cancat(parameter('environment'),'-con-c4')]": {
+                            "value": "connection_c4",
+                            "type": "SQLAzure"
+                        },
+                        "[cancat(parameter('environment'),'-con-c5')]": {
+                            "value": "connection_c5",
+                            "type": "SQLAzure"
+                        }
+                    },
+                    "appSettings": {
+                        "appsttings01": "appsttings01",
+                        "appsttings02": "appsttings02"
+                    }
+                },
+                "qa": {
+                    "connectionStrings": {
+                        "qa-con-c1": {
+                            "value": "connection_c1",
+                            "type": "SQLAzure"
+                        },
+                        "qa-con-c2": {
+                            "value": "connection_c2",
+                            "type": "SQLAzure"
+                        },
+                        "qa-con-c3": {
+                            "value": "connection_c3",
+                            "type": "SQLAzure"
+                        },
+                        "qa-con-c4": {
+                            "value": "connection_c4",
+                            "type": "SQLAzure"
+                        },
+                        "qa-con-c5": {
+                            "value": "connection_c5",
+                            "type": "SQLAzure"
+                        }
+                    },
+                    "appSettings": {
+                        "appsttings01": "appsttings01",
+                        "appsttings02": "appsttings02"
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,59 @@
+#The code allows for a particular data key to be retrieved individually
+
+function Get-NestedKeyValue {
+    param (
+        [Parameter(Mandatory=$true)] [System.Object]$Object,
+        [Parameter(Mandatory=$true)] [string]$Key
+    )
+
+
+    # Throwing Exception when given Nested Object does not contain key value pair
+    if ($Object -isnot [System.Collections.IDictionary]) {
+        throw "Invalid Object: Please provide Object with Key-Value pairs"
+    } 
+
+    #  Fetching the value for key
+    if ($Object.ContainsKey($Key)) {
+        return $Object[$Key] 
+    }
+
+    # Iterating Over nested object to find the value of desired key
+    foreach ($prop in $Object.GetEnumerator()) {
+        if ($prop.Value -is [System.Collections.IDictionary]) {
+            $result = Get-NestedKeyValue -Object $prop.Value -Key $Key
+            if ($result -ne $null) {
+                return $result
+            }
+        }
+    }
+
+    # Return null if the key is not available 
+    return $null 
+}
+
+ ****************** Actual Script starts from here ******* Bonus Point Script at top*************
+
+#specifying custom headers to include in the request
+$Header = @{"Metadata"="true"}
+
+#Rest Endpoint
+$uri = "http://169.254.169.254/metadata/instance/compute?api-version=2017-08-01&format=json"
+
+
+#Making a GET request to the specified URI with the custom headers specified in $Header
+$metadata = Invoke-RestMethod -Headers $Header -Method Get -Uri $uri
+$hash = @{} 
+
+
+#Retrieves a list of all the properties of the $metadata object, which is typically the output from Invoke-RestMethod 
+$metadata.psobject.properties | foreach{$hash[$_.Name]= $_.Value}
+
+
+
+$read = Read-Host "Do you want to fetch the value of individial key? Yes/ No"
+
+if($read -eq "Yes"){
+    $key = Read-Host "Enter the Key for fetching the value"
+    Get-NestedKeyValue -Object $hash -key $key
+} 
+

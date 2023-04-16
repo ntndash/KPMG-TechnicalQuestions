@@ -1,0 +1,74 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "uniqueDnsName": {
+      "type": "string",
+      "metadata": {
+        "description": "Relative DNS name for the traffic manager profile, resulting FQDN will be <uniqueDnsName>.trafficmanager.net, must be globally unique."
+      }
+    },
+    "subscriptions": {
+      "type": "string",
+      "metadata": {
+        "description": " subscription id "
+      }
+    },
+    "uniqueDnsNamesForWebApp": {
+      "type": "array",
+      "metadata": {
+        "description": "Relative DNS name for the WebApps, must be globally unique.  An index will be appended for each Web App."
+      }
+    },
+    "relevantRGs": {
+      "type": "array",
+      "metadata": {
+        "description": "Relative RG's for name for the WebApps"
+      }
+    }
+  },
+  "resources": [
+    {
+      "apiVersion": "2017-05-01",
+      "type": "Microsoft.Network/trafficManagerProfiles",
+      "name": "[parameters('uniqueDnsName')]",
+      "location": "global",
+      "tags": {
+        "Service": "Digital Platform"
+      },
+      "properties": {
+        "profileStatus": "Enabled",
+        "trafficRoutingMethod": "Priority",
+        "dnsConfig": {
+          "relativeName": "[parameters('uniqueDnsName')]",
+          "ttl": 30
+        },
+        "monitorConfig": {
+          "protocol": "HTTPS",
+          "port": 443,
+          "path": "/",
+          "intervalInSeconds": 30,
+          "toleratedNumberOfFailures": 3,
+          "timeoutInSeconds": 10
+        }
+      }
+    },
+    {
+      "apiVersion": "2017-05-01",
+      "type": "Microsoft.Network/trafficManagerProfiles/azureEndpoints",
+      "dependsOn": [
+        "[concat('Microsoft.Network/trafficManagerProfiles/',parameters('uniqueDnsName'))]"
+      ],
+      "location": "global",
+      "name": "[concat(parameters('uniqueDnsName'),'/Endpoint-',parameters('uniqueDnsNamesForWebApp')[copyIndex()])]",
+      "copy": {
+        "name": "endpointloop",
+        "count": "[length(parameters('uniqueDnsNamesForWebApp'))]"
+      },
+      "properties": {
+        "targetResourceId": "[resourceId(parameters('subscriptions'),parameters('relevantRGs')[copyIndex()],'Microsoft.Web/sites/', parameters('uniqueDnsNamesForWebApp')[copyIndex()])]",
+        "endpointStatus": "Enabled"
+      }
+    }
+  ]
+}

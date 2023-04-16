@@ -1,0 +1,572 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "appservicename": {
+            "type": "string",
+            "minLength": 1
+        },
+        "costcenter": {
+            "type": "string",
+            "minLength": 1,
+            "metadata": {
+                "description": "The app costcenter name."
+            }
+        },
+        "environment": {
+            "type": "string",
+            "minLength": 1,
+            "metadata": {
+                "description": "The SQL server Environment."
+            }
+        },
+        "owner": {
+            "type": "string",
+            "minLength": 1,
+            "metadata": {
+                "description": "The application Owner."
+            }
+        },
+        "webappnames": {
+            "type": "array",
+            "metadata": {
+                "description": "The names of the Web Apps"
+            }
+        },
+        "customEmailAddresses": {
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "Comma-delimited email addresses where the alerts are also sent"
+            }
+        }
+    },
+    "variables": {
+        "appservicename": "[concat(parameters('appservicename'),'-',parameters('environment'))]",
+        "appinsightname": "[concat(parameters('appservicename'),'-',parameters('environment'),'-','appinsight')]",
+        "actionGroupName": "Digital Platform Team",
+        "actionGroupShortName": "dpteamag",
+        "actionGroupId": "/subscriptions/7b9e226e-3ddd-4ac1-88a6-3bfe19a32820/resourceGroups/Default-ActivityLogAlerts/providers/microsoft.insights/actiongroups/Digital Platform Team",
+        "appinsightid": "[resourceId(resourceGroup().name, 'Microsoft.Insights/components', concat(parameters('appservicename'),'-',parameters('environment'),'-','appinsight'))]"
+    },
+    "resources": [
+        {
+            "apiVersion": "2015-05-01",
+            "name": "[variables('appinsightname')]",
+            "type": "Microsoft.Insights/components",
+            "location": "[resourceGroup().location]",
+            "kind": "web",
+            "properties": {
+                "applicationId": "[variables('appinsightname')]",
+                "Application_Type": "web"
+            },
+            "tags": {
+                "displayName": "[variables('appinsightname')]",
+                "environment": "[parameters('environment')]",
+                "costcenter": "[parameters('costcenter')]",
+                "owner": "[parameters('owner')]",
+                "Service": "Digital Platform"
+            }
+        },
+        {
+            "apiVersion": "2014-04-01",
+            "name": "[variables('appservicename')]",
+            "type": "Microsoft.Insights/autoscalesettings",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[variables('appinsightname')]"
+            ],
+            "tags": {
+                "[concat('hidden-link:', resourceGroup().id, '/providers/Microsoft.Web/serverfarms/', variables('appservicename'))]": "Resource",
+                "displayName": "AutoScaleSettings",
+                "environment": "[parameters('environment')]",
+                "costcenter": "[parameters('costcenter')]",
+                "owner": "[parameters('owner')]",
+                "Service": "Digital Platform"
+            },
+            "properties": {
+                "profiles": [
+                    {
+                        "name": "scaleoncpupercentage",
+                        "capacity": {
+                            "minimum": 1,
+                            "maximum": 10,
+                            "default": 1
+                        },
+                        "rules": [
+                            {
+                                "metricTrigger": {
+                                    "metricName": "CpuPercentage",
+                                    "metricResourceUri": "[concat(resourceGroup().id, '/providers/Microsoft.Web/serverfarms/', variables('appservicename'))]",
+                                    "timeGrain": "PT1M",
+                                    "statistic": "Average",
+                                    "timeWindow": "PT10M",
+                                    "timeAggregation": "Average",
+                                    "operator": "GreaterThan",
+                                    "threshold": 80.0
+                                },
+                                "scaleAction": {
+                                    "direction": "Increase",
+                                    "type": "ChangeCount",
+                                    "value": 1,
+                                    "cooldown": "PT10M"
+                                }
+                            },
+                            {
+                                "metricTrigger": {
+                                    "metricName": "CpuPercentage",
+                                    "metricResourceUri": "[concat(resourceGroup().id, '/providers/Microsoft.Web/serverfarms/', variables('appservicename'))]",
+                                    "timeGrain": "PT1M",
+                                    "statistic": "Average",
+                                    "timeWindow": "PT1H",
+                                    "timeAggregation": "Average",
+                                    "operator": "LessThan",
+                                    "threshold": 50.0
+                                },
+                                "scaleAction": {
+                                    "direction": "Decrease",
+                                    "type": "ChangeCount",
+                                    "value": 1,
+                                    "cooldown": "PT1H"
+                                }
+                            }
+                        ],
+                        "recurrence": {
+                            "frequency": "Week",
+                            "schedule": {
+                                "timeZone": "UTC",
+                                "days": [
+                                    "Monday",
+                                    "Tuesday",
+                                    "Wednesday",
+                                    "Thursday",
+                                    "Friday",
+                                    "Saturday",
+                                    "Sunday"
+                                ],
+                                "hours": [
+                                    23
+                                ],
+                                "minutes": [
+                                    59
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "name": "scaleonmemorypercentage",
+                        "capacity": {
+                            "minimum": 1,
+                            "maximum": 10,
+                            "default": 1
+                        },
+                        "rules": [
+                            {
+                                "metricTrigger": {
+                                    "metricName": "MemoryPercentage",
+                                    "metricResourceUri": "[concat(resourceGroup().id, '/providers/Microsoft.Web/serverfarms/', variables('appservicename'))]",
+                                    "timeGrain": "PT1M",
+                                    "statistic": "Average",
+                                    "timeWindow": "PT10M",
+                                    "timeAggregation": "Average",
+                                    "operator": "GreaterThan",
+                                    "threshold": 80.0
+                                },
+                                "scaleAction": {
+                                    "direction": "Increase",
+                                    "type": "ChangeCount",
+                                    "value": 1,
+                                    "cooldown": "PT10M"
+                                }
+                            },
+                            {
+                                "metricTrigger": {
+                                    "metricName": "MemoryPercentage",
+                                    "metricResourceUri": "[concat(resourceGroup().id, '/providers/Microsoft.Web/serverfarms/', variables('appservicename'))]",
+                                    "timeGrain": "PT1M",
+                                    "statistic": "Average",
+                                    "timeWindow": "PT1H",
+                                    "timeAggregation": "Average",
+                                    "operator": "LessThan",
+                                    "threshold": 50.0
+                                },
+                                "scaleAction": {
+                                    "direction": "Decrease",
+                                    "type": "ChangeCount",
+                                    "value": 1,
+                                    "cooldown": "PT1H"
+                                }
+                            }
+                        ],
+                        "recurrence": {
+                            "frequency": "Week",
+                            "schedule": {
+                                "timeZone": "UTC",
+                                "days": [
+                                    "Monday",
+                                    "Tuesday",
+                                    "Wednesday",
+                                    "Thursday",
+                                    "Friday",
+                                    "Saturday",
+                                    "Sunday"
+                                ],
+                                "hours": [
+                                    0
+                                ],
+                                "minutes": [
+                                    0
+                                ]
+                            }
+                        }
+                    }
+                ],
+                "enabled": true,
+                "targetResourceUri": "[concat(resourceGroup().id, '/providers/Microsoft.Web/serverfarms/', variables('appservicename'))]"
+            }
+        },
+        {
+            "type": "microsoft.insights/metricAlerts",
+            "apiVersion": "2018-03-01",
+            "name": "[concat('CPU Hot-', variables('appservicename'))]",
+            "location": "global",
+            "tags": {
+                "[concat('hidden-link:', resourceGroup().id, '/providers/Microsoft.Web/serverfarms/', variables('appservicename'))]": "Resource",
+                "displayName": "[concat('CPU Hot-', variables('appservicename'))]",
+                "environment": "[parameters('environment')]",
+                "costcenter": "[parameters('costcenter')]",
+                "owner": "[parameters('owner')]",
+                "Service": "Digital Platform"
+            },
+            "dependsOn": [
+                "[variables('appinsightid')]"
+            ],
+            "properties": {
+                "description": "[concat('The average CPU is high across all the instances of ', variables('appservicename'))]",
+                "severity": 2,
+                "enabled": true,
+                "scopes": [
+                    "[concat(resourceGroup().id, '/providers/Microsoft.Web/serverfarms/', variables('appservicename'))]"
+                ],
+                "evaluationFrequency": "PT5M",
+                "windowSize": "PT15M",
+                "criteria": {
+                    "odata.type": "Microsoft.Azure.Monitor.MultipleResourceMultipleMetricCriteria",
+                    "allOf": [
+                        {
+                            "alertSensitivity": "High",
+                            "failingPeriods": {
+                                "numberOfEvaluationPeriods": 4,
+                                "minFailingPeriodsToAlert": 4
+                            },
+                            "name": "CpuPercentage criterion",
+                            "metricName": "CpuPercentage",
+                            "metricNamespace": "Microsoft.Web/serverFarms",
+                            "dimensions": [],
+                            "operator": "GreaterThan",
+                            "timeAggregation": "Average",
+                            "criterionType": "DynamicThresholdCriterion"
+                        }
+                    ]
+                },
+                "autoMitigate": true,
+                "targetResourceType": "Microsoft.Web/serverFarms",
+                "targetResourceRegion": "northeurope",
+                "actions": [
+                    {
+                        "actionGroupId": "[variables('actionGroupId')]",
+                        "webHookProperties": {}
+                    }
+                ]
+            }
+        },
+        {
+            "type": "microsoft.insights/metricAlerts",
+            "apiVersion": "2018-03-01",
+            "name": "[concat('Memory Hot-', variables('appservicename'))]",
+            "location": "global",
+            "tags": {
+                "[concat('hidden-link:', resourceGroup().id, '/providers/Microsoft.Web/serverfarms/', variables('appservicename'))]": "Resource",
+                "displayName": "[concat('Memory Hot-', variables('appservicename'))]",
+                "environment": "[parameters('environment')]",
+                "costcenter": "[parameters('costcenter')]",
+                "owner": "[parameters('owner')]",
+                "Service": "Digital Platform"
+            },
+            "dependsOn": [
+                "[variables('appinsightid')]"
+            ],
+            "properties": {
+                "description": "[concat('The average CPU is high across all the instances of ', variables('appservicename'))]",
+                "severity": 2,
+                "enabled": true,
+                "scopes": [
+                    "[concat(resourceGroup().id, '/providers/Microsoft.Web/serverfarms/', variables('appservicename'))]"
+                ],
+                "evaluationFrequency": "PT5M",
+                "windowSize": "PT15M",
+                "criteria": {
+                    "odata.type": "Microsoft.Azure.Monitor.MultipleResourceMultipleMetricCriteria",
+                    "allOf": [
+                        {
+                            "alertSensitivity": "High",
+                            "failingPeriods": {
+                                "numberOfEvaluationPeriods": 4,
+                                "minFailingPeriodsToAlert": 4
+                            },
+                            "name": "MemoryPercentage criterion",
+                            "metricName": "MemoryPercentage",
+                            "metricNamespace": "Microsoft.Web/serverFarms",
+                            "dimensions": [],
+                            "operator": "GreaterThan",
+                            "timeAggregation": "Average",
+                            "criterionType": "DynamicThresholdCriterion"
+                        }
+                    ]
+                },
+                "autoMitigate": true,
+                "targetResourceType": "Microsoft.Web/serverFarms",
+                "targetResourceRegion": "northeurope",
+                "actions": [
+                    {
+                        "actionGroupId": "[variables('actionGroupId')]",
+                        "webHookProperties": {}
+                    }
+                ]
+            }
+        },
+        {
+            "type": "microsoft.insights/metricAlerts",
+            "apiVersion": "2018-03-01",
+            "name": "[concat('LongHttpQueue-', variables('appservicename'))]",
+            "location": "global",
+            "tags": {
+                "[concat('hidden-link:', resourceGroup().id, '/providers/Microsoft.Web/serverfarms/', variables('appservicename'))]": "Resource",
+                "displayName": "[concat('LongHttpQueue-', variables('appservicename'))]",
+                "environment": "[parameters('environment')]",
+                "costcenter": "[parameters('costcenter')]",
+                "owner": "[parameters('owner')]",
+                "Service": "Digital Platform"
+            },
+            "dependsOn": [
+                "[variables('appinsightid')]"
+            ],
+            "properties": {
+                "description": "[concat('The HTTP queue for the instances of ', variables('appservicename'), ' has a large number of pending requests.')]",
+                "severity": 2,
+                "enabled": true,
+                "scopes": [
+                    "[concat(resourceGroup().id, '/providers/Microsoft.Web/serverfarms/', variables('appservicename'))]"
+                ],
+                "evaluationFrequency": "PT5M",
+                "windowSize": "PT15M",
+                "criteria": {
+                    "odata.type": "Microsoft.Azure.Monitor.MultipleResourceMultipleMetricCriteria",
+                    "allOf": [
+                        {
+                            "alertSensitivity": "High",
+                            "failingPeriods": {
+                                "numberOfEvaluationPeriods": 4,
+                                "minFailingPeriodsToAlert": 4
+                            },
+                            "name": "HttpQueueLength criterion",
+                            "metricName": "HttpQueueLength",
+                            "dimensions": [],
+                            "operator": "GreaterThan",
+                            "metricNamespace": "Microsoft.Web/serverFarms",
+                            "timeAggregation": "average",
+                            "criterionType": "DynamicThresholdCriterion"
+                        }
+                    ]
+                },
+                "autoMitigate": true,
+                "targetResourceType": "Microsoft.Web/serverFarms",
+                "targetResourceRegion": "northeurope",
+                "actions": [
+                    {
+                        "actionGroupId": "[variables('actionGroupId')]",
+                        "webHookProperties": {}
+                    }
+                ]
+            }
+        },
+        {
+            "type": "microsoft.insights/metricAlerts",
+            "apiVersion": "2018-03-01",
+            "name": "[concat('ForbiddenRequests-', parameters('webappnames')[copyIndex()])]",
+            "location": "global",
+            "tags": {
+                "[concat('hidden-link:', resourceGroup().id, '/providers/Microsoft.Web/sites/',parameters('webappnames')[copyIndex()])]": "Resource",
+                "displayName": "[concat('ForbiddenRequests-', parameters('webappnames')[copyIndex()])]",
+                "environment": "[parameters('environment')]",
+                "costcenter": "[parameters('costcenter')]",
+                "owner": "[parameters('owner')]",
+                "Service": "Digital Platform"
+            },
+            "dependsOn": [
+                "[variables('appinsightid')]"
+            ],
+            "properties": {
+                "description": "[concat(parameters('webappnames')[copyIndex()], ' has some requests that are forbidden, status code 403.')]",
+                "severity": 2,
+                "enabled": true,
+                "scopes": [
+                    "[concat(resourceGroup().id, '/providers/Microsoft.Web/sites/', parameters('webappnames')[copyIndex()])]"
+                ],
+                "evaluationFrequency": "PT5M",
+                "windowSize": "PT15M",
+                "criteria": {
+                    "odata.type": "Microsoft.Azure.Monitor.MultipleResourceMultipleMetricCriteria",
+                    "allOf": [
+                        {
+                            "alertSensitivity": "High",
+                            "failingPeriods": {
+                                "numberOfEvaluationPeriods": 4,
+                                "minFailingPeriodsToAlert": 4
+                            },
+                            "name": "Http403 criterion",
+                            "metricName": "Http403",
+                            "metricNamespace": "Microsoft.Web/sites",
+                            "dimensions": [],
+                            "operator": "GreaterThan",
+                            "timeAggregation": "Average",
+                            "criterionType": "DynamicThresholdCriterion"
+                        }
+                    ]
+                },
+                "autoMitigate": true,
+                "targetResourceType": "Microsoft.Web/sites",
+                "targetResourceRegion": "northeurope",
+                "actions": [
+                    {
+                        "actionGroupId": "[variables('actionGroupId')]",
+                        "webHookProperties": {}
+                    }
+                ]
+            },
+            "copy": {
+                "name": "ForbiddenRequestsAlertRule",
+                "count": "[length(parameters('webappnames'))]"
+            }
+        },
+        {
+            "type": "microsoft.insights/metricAlerts",
+            "apiVersion": "2018-03-01",
+            "name": "[concat('ServerErrors-',parameters('webappnames')[copyIndex()])]",
+            "location": "global",
+            "tags": {
+                "[concat('hidden-link:', resourceGroup().id, '/providers/Microsoft.Web/sites/', parameters('webappnames')[copyIndex()])]": "Resource",
+                "displayName": "[concat('ServerErrors-',parameters('webappnames')[copyIndex()])]",
+                "environment": "[parameters('environment')]",
+                "costcenter": "[parameters('costcenter')]",
+                "owner": "[parameters('owner')]",
+                "Service": "Digital Platform"
+            },
+            "dependsOn": [
+                "[variables('appinsightid')]"
+            ],
+            "properties": {
+                "description": "[concat(parameters('webappnames')[copyIndex()], ' has some server errors, status code 5xx.')]",
+                "severity": 2,
+                "enabled": true,
+                "scopes": [
+                    "[concat(resourceGroup().id, '/providers/Microsoft.Web/sites/', parameters('webappnames')[copyIndex()])]"
+                ],
+                "evaluationFrequency": "PT5M",
+                "windowSize": "PT15M",
+                "criteria": {
+                    "odata.type": "Microsoft.Azure.Monitor.MultipleResourceMultipleMetricCriteria",
+                    "allOf": [
+                        {
+                            "alertSensitivity": "High",
+                            "failingPeriods": {
+                                "numberOfEvaluationPeriods": 4,
+                                "minFailingPeriodsToAlert": 4
+                            },
+                            "name": "Http5xx criterion",
+                            "metricName": "Http5xx",
+                            "metricNamespace": "Microsoft.Web/sites",
+                            "dimensions": [],
+                            "operator": "GreaterThan",
+                            "timeAggregation": "Average",
+                            "criterionType": "DynamicThresholdCriterion"
+                        }
+                    ]
+                },
+                "autoMitigate": true,
+                "targetResourceType": "Microsoft.Web/sites",
+                "targetResourceRegion": "northeurope",
+                "actions": [
+                    {
+                        "actionGroupId": "[variables('actionGroupId')]",
+                        "webHookProperties": {}
+                    }
+                ]
+            },
+            "copy": {
+                "name": "ServerErrorsAlertRule",
+                "count": "[length(parameters('webappnames'))]"
+            }
+        },
+        {
+            "type": "microsoft.insights/metricAlerts",
+            "apiVersion": "2018-03-01",
+            "name": "[concat('AverageResponseTime-',parameters('webappnames')[copyIndex()])]",
+            "location": "global",
+            "tags": {
+                "[concat('hidden-link:', resourceGroup().id, '/providers/Microsoft.Web/sites/',parameters('webappnames')[copyIndex()])]": "Resource",
+                "displayName": "[concat('AverageResponseTime-', parameters('webappnames')[copyIndex()])]",
+                "environment": "[parameters('environment')]",
+                "costcenter": "[parameters('costcenter')]",
+                "owner": "[parameters('owner')]",
+                "Service": "Digital Platform"
+            },
+            "dependsOn": [
+                "[variables('appinsightid')]"
+            ],
+            "properties": {
+                "description": "[concat('The AverageResponseTime for the instances of ', parameters('webappnames')[copyIndex()], ' has a large number of pending requests.')]",
+                "severity": 2,
+                "enabled": true,
+                "scopes": [
+                    "[concat(resourceGroup().id, '/providers/Microsoft.Web/sites/', parameters('webappnames')[copyIndex()])]"
+                ],
+                "evaluationFrequency": "PT5M",
+                "windowSize": "PT15M",
+                "criteria": {
+                    "odata.type": "Microsoft.Azure.Monitor.MultipleResourceMultipleMetricCriteria",
+                    "allOf": [
+                        {
+                            "alertSensitivity": "High",
+                            "failingPeriods": {
+                                "numberOfEvaluationPeriods": 4,
+                                "minFailingPeriodsToAlert": 4
+                            },
+                            "name": "AverageResponseTime criterion",
+                            "metricName": "AverageResponseTime",
+                            "metricNamespace": "Microsoft.Web/sites",
+                            "dimensions": [],
+                            "operator": "GreaterThan",
+                            "timeAggregation": "Average",
+                            "criterionType": "DynamicThresholdCriterion"
+                        }
+                    ]
+                },
+                "autoMitigate": true,
+                "targetResourceType": "Microsoft.Web/sites",
+                "targetResourceRegion": "northeurope",
+                "actions": [
+                    {
+                        "actionGroupId": "[variables('actionGroupId')]",
+                        "webHookProperties": {}
+                    }
+                ]
+            },
+            "copy": {
+                "name": "AverageResponseTimeAlertRule",
+                "count": "[length(parameters('webappnames'))]"
+            }
+        }
+
+    ]
+}

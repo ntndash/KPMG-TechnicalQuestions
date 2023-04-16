@@ -1,0 +1,155 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "costcenter": {
+      "type": "string",
+      "minLength": 1,
+      "metadata": {
+        "description": "The app costcenter name."
+      }
+    },
+    "sqlservername": {
+      "type": "string",
+      "minLength": 1,
+      "metadata": {
+        "description": "The SQL server name."
+      }
+    },
+    "owner": {
+      "type": "string",
+      "minLength": 1,
+      "metadata": {
+        "description": "The application Owner."
+      }
+    },
+    "environment": {
+      "type": "string",
+      "minLength": 1,
+      "metadata": {
+        "description": "The SQL server Environment."
+      }
+    },
+    "sqlserveradminlogin": {
+      "type": "string",
+      "minLength": 1,
+      "metadata": {
+        "description": "The SQL server admin username."
+      }
+    },
+    "sqlserveradminloginpassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "The SQL server admin password"
+      }
+    },
+    "db_instances": {
+      "type": "array",
+      "metadata": {
+        "description": "Array with the names for the database slots"
+      }
+    },
+    "failovergrpname" : {
+      "type": "string",
+      "metadata": {
+        "description": "The Sql azure failover group name"
+      }
+    },
+    "failoversqlservername" : {
+      "type": "string",
+      "defaultValue":"",
+      "metadata": {
+        "description": "The Sql azure failover server name"
+      }
+    },
+    "failoverlocation" : {
+      "type": "string",
+      "metadata": {
+        "description": "The location of failover server"
+      }
+    },
+    "failoverPolicy" : {
+      "type": "string",
+      "metadata": {
+        "description": "The policy type of failover server"
+      }
+    },
+    "failoverWithDataLossGracePeriodMinutes" : {
+      "type": "string",
+      "metadata": {
+        "description": "The failover data loss grace period for recovery"
+      }
+    }
+
+  },
+  "variables": {
+    "failoverSqlServerName":"[concat(parameters('failoversqlservername'),'-',parameters('environment'))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Sql/servers/failoverGroups",
+      "name":  "[concat(parameters('sqlservername'),'/',parameters('failovergrpname'))]",
+      "apiVersion": "2015-05-01-preview",
+      "location": "[parameters('failoverlocation')]",
+      "tags": {
+        "displayName": "[concat(parameters('sqlservername'),'-',parameters('environment'),'/',parameters('failovergrpname'))]",
+        "environment":"[parameters('environment')]",
+        "costcenter":"[parameters('costcenter')]",
+        "owner":"[parameters('owner')]",
+        "Service": "Digital Platform"
+
+      },
+      "properties": {
+          "readWriteEndpoint": {
+              "failoverPolicy": "[parameters('failoverPolicy')]",
+              "failoverWithDataLossGracePeriodMinutes":  "[parameters('failoverWithDataLossGracePeriodMinutes')]"
+          },
+          "partnerServers": [
+              {
+                  "id": "[resourceId('Microsoft.Sql/servers/', concat(parameters('failoversqlservername'),'-',parameters('environment')))]"
+              }
+          ],
+          "databases": "[parameters('db_instances')]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers/', concat(parameters('failoversqlservername'),'-',parameters('environment')))]"
+      ]
+
+    },
+    {
+      "name": "[variables('failoverSqlServerName')]",
+      "type": "Microsoft.Sql/servers",
+      "location": "[parameters('failoverlocation')]",
+      "apiVersion":"2015-05-01-preview",
+      "dependsOn": [],
+      "tags": {
+        "displayName": "[variables('failoverSqlServerName')]",
+        "environment":"[parameters('environment')]",
+        "costcenter":"[parameters('costcenter')]",
+        "owner":"[parameters('owner')]",
+        "Service": "Digital Platform"
+
+      },
+      "properties": {
+        "administratorLogin": "[parameters('sqlserveradminlogin')]",
+        "administratorLoginPassword": "[parameters('sqlserveradminloginpassword')]",
+        "version": "12.0"
+      },
+      "resources": [{
+          "name": "AllowAllWindowsAzureIps",
+          "type": "firewallrules",
+          "location": "[resourceGroup().location]",
+          "apiVersion": "2014-04-01-preview",
+          "dependsOn": [
+            "[concat('Microsoft.Sql/servers/', concat(parameters('failoversqlservername'),'-',parameters('environment')))]"
+          ],
+          "properties": {
+            "startIpAddress": "0.0.0.0",
+            "endIpAddress": "0.0.0.0"
+          }
+        }
+      ]
+    }
+
+  ]
+}

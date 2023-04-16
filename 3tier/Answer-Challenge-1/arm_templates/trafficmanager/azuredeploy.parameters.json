@@ -1,0 +1,19 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "uniqueDnsName": {
+            "value": "lr-sandpit-tm"
+        },
+        "uniqueDnsNamesForWebApp": {
+            "value": ["ExampleWebApp1", "ExampleWebApp2"]
+        },
+        "relevantRGs": {
+            "value": ["lr-digitalplatform-sandpit-rg", "lr-digitalplatform-sandpit-rg"]
+        },
+        "subscriptions": {
+            "value": "7b9e226e-3ddd-4ac1-88a6-3bfe19a32820"
+        }
+
+    }
+}

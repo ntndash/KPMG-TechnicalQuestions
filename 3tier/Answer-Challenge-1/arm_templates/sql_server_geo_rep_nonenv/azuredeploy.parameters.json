@@ -1,0 +1,49 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "failovergrpname": {
+            "value": "lr-digitalplatform-sqlserver-failovergroup"
+        },
+        "failoversqlservername": {
+            "value": "lr-digitalplatform-sqlserver-failover"
+        },
+        "failoverlocation": {
+            "value": "westeurope"
+        },
+        "failoverPolicy": {
+            "value":"Automatic"
+        },
+        "failoverWithDataLossGracePeriodMinutes":{
+            "value":"60"
+        },
+        "sqlservername": {
+            "value": "lr-digitalplatform-sqlserver"
+        },
+        "sqlserveradminlogin": {
+            "value": "lr-digitalplatform-db-user"
+        },
+        "sqlserveradminloginpassword": {
+            "reference": {
+                "keyVault": {
+                    "id": "/subscriptions/7b9e226e-3ddd-4ac1-88a6-3bfe19a32820/resourceGroups/lr-key-vaults-rg/providers/Microsoft.KeyVault/vaults/lr-digiplatform-keyvault"
+                },
+                "secretName": "lr-digitalplatform-db-user"
+            }
+        },
+        "db_instances" : {
+            "value":["/subscriptions/7b9e226e-3ddd-4ac1-88a6-3bfe19a32820/resourceGroups/lr-digitalplatform-sandpit-rg/providers/Microsoft.Sql/servers/lr-digitalplatform-sqlserver-nonprod/databases/lr-digitalplatform-db-dev",
+                     "/subscriptions/7b9e226e-3ddd-4ac1-88a6-3bfe19a32820/resourceGroups/lr-digitalplatform-sandpit-rg/providers/Microsoft.Sql/servers/lr-digitalplatform-sqlserver-nonprod/databases/lr-digitalplatform-db-qa"]
+        },
+        "environment" : {
+            "value": "nonprod"
+        },
+        "costcenter" : {
+            "value": "digitalplatform"
+        },
+        "owner" : {
+            "value": "LRSB"
+         }
+
+    }
+}

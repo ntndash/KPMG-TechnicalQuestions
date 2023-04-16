@@ -1,0 +1,27 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "webtestname": {
+            "value": "cocacola-webapp-webtest"
+        },
+        "webappnames": {
+            "value": "cocacola-webapp-prod"
+        },
+        "appinsightname": {
+            "value": "cocacola-serviceplan-prod-appinsight"
+        },
+        "customEmailAddresses": {
+            "value": "ntndash@gmail.com"
+        },
+        "environment": {
+            "value": "prod"
+        },
+        "costcenter": {
+            "value": "cocacola"
+        },
+        "owner": {
+            "value": "DASH"
+        }
+    }
+}
