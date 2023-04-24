@@ -31,7 +31,7 @@ function Get-NestedKeyValue {
     return $null 
 }
 
- ****************** Actual Script starts from here ******* Bonus Point Script at top*************
+ #****************** Actual Script starts from here ******* Bonus Point Script at top*************
 
 #specifying custom headers to include in the request
 $Header = @{"Metadata"="true"}
@@ -51,6 +51,8 @@ $metadata.psobject.properties | foreach{$hash[$_.Name]= $_.Value}
 
 
 $read = Read-Host "Do you want to fetch the value of individial key? Yes/ No"
+Write-host "Please find below keys"
+$hash.keys
 
 if($read -eq "Yes"){
     $key = Read-Host "Enter the Key for fetching the value"
